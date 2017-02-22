@@ -16,18 +16,22 @@
     "toki-method-proxy"
   ],
   "scripts": {
-      "test": "node_modules/.bin/lab"
+    "test": "node_modules/.bin/lab",
+    "lint": "node_modules/.bin/eslint --fix lib/ test/"
   },
   "author": "XO Group Team",
   "license": "ISC",
   "devDependencies": {
+    "boom": "^4.2.0",
     "code": "4.0.0",
     "eslint": "3.10.2",
-    "eslint-plugin-xogroup": "1.x.x",
+    "eslint-config-hapi": "^10.0.0",
+    "eslint-plugin-hapi": "^4.0.0",
+    "hapi": "^16.1.0",
     "lab": "12.1.0"
   },
-  "peerDependencies": {
-  },
+  "peerDependencies": {},
   "dependencies": {
+    "superagent": "^3.4.3"
   }
 }

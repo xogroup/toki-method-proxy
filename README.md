@@ -5,7 +5,7 @@
 This is an X which does Y for the purpose of Z.
 
 <!-- Maintainer (Hint, probably you) -->
-Lead Maintainer: [Your name goes here](https://github.com/Your Github URL)
+Lead Maintainer: [Matt Phillips](https://github.com/Your Github URL)
 
 <!-- Badges Go Here -->
 
