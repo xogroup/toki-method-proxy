@@ -32,6 +32,6 @@
   },
   "peerDependencies": {},
   "dependencies": {
-    "superagent": "^3.4.3"
+    "superagent": "^3.5.0"
   }
 }
