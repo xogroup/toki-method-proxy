@@ -55,7 +55,8 @@ describe('proxyMethod', () => {
                 if (request.payload && request.payload.test === 'abc'){
                     console.log('before success reply');
                     reply('Success!');
-                } else {
+                }
+                else {
                     console.log('before boom');
                     reply(Boom.notFound('Missing'));
                 }
@@ -124,10 +125,7 @@ describe('proxyMethod', () => {
                 context.server.request.rawRequest   = rawRequest;
                 context.server.response.rawResponse = rawResponse;
 
-                // console.log('rawResponse before: ', context.server.response.rawResponse)
-                context.server.response.rawResponse.on('end', () => {
-                    console.log('ENDED');
-                });
+                // console.log('rawResponse before: ', context.server.response.rawResponse);
             })
             .then(() => {
                 const proxyRequest = proxyMethod.bind(context);
@@ -136,6 +134,7 @@ describe('proxyMethod', () => {
             })
             .then((data) => {
                 console.log('rawResponse after ', context.server.response.rawResponse);
+                console.log('data after ', data);
 
                 expect(context.server.response.rawResponse).to.exist();
                 expect(context.server.response.rawResponse.statusCode).to.equal(200);
