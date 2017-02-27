@@ -50,14 +50,14 @@ describe('proxyMethod', () => {
             method : 'POST',
             path   : '/test',
             handler: function (request, reply) {
-                // console.log('request: ', request);
+                console.log('PAYLOAD::: ', request.payload);
 
                 if (request.payload && request.payload.test === 'abc'){
-                    return reply('Success!');
-                }
-                else {
+                    console.log('before success reply');
+                    reply('Success!');
+                } else {
                     console.log('before boom');
-                    return reply(Boom.notFound('Missing'));
+                    reply(Boom.notFound('Missing'));
                 }
             }
         });
@@ -73,10 +73,9 @@ describe('proxyMethod', () => {
         });
     });
 
-    it('checks to make sure proxyMethod is an object', (done) => {
+    it('checks to make sure proxyMethod is a function', (done) => {
 
-        expect(proxyMethod).to.be.a.object();
-        expect(proxyMethod).to.include('proxyRequest');
+        expect(proxyMethod).to.be.a.function();
         done();
     });
 
@@ -92,14 +91,14 @@ describe('proxyMethod', () => {
                 rawRequest  = request.raw.req;
                 rawResponse = request.raw.res;
 
-                return reply(true);
+                reply(true);
             }
         });
 
         const context = {
             action: {
                 method: 'post',
-                destinationUrl: 'localhost:5001'
+                destinationUrl: 'http://localhost:5001'
             },
             server: {
                 request: {
@@ -131,12 +130,12 @@ describe('proxyMethod', () => {
                 });
             })
             .then(() => {
-                const proxyRequest = proxyMethod.proxyRequest.bind(context);
+                const proxyRequest = proxyMethod.bind(context);
 
                 return proxyRequest();
             })
-            .then(() => {
-                // console.log('rawResponse after ', context.server.response.rawResponse);
+            .then((data) => {
+                console.log('rawResponse after ', context.server.response.rawResponse);
 
                 expect(context.server.response.rawResponse).to.exist();
                 expect(context.server.response.rawResponse.statusCode).to.equal(200);
