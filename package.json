@@ -16,7 +16,7 @@
     "toki-method-proxy"
   ],
   "scripts": {
-    "test": "node_modules/.bin/lab",
+    "test": "node_modules/.bin/lab -c",
     "lint": "node_modules/.bin/eslint --fix lib/ test/"
   },
   "author": "XO Group Team",
@@ -32,6 +32,5 @@
   },
   "peerDependencies": {},
   "dependencies": {
-    "superagent": "^3.5.0"
   }
 }

@@ -48,7 +48,31 @@ describe('proxyMethod', () => {
         };
 
         mockDestinationServer.route({
+            method : 'GET',
+            path   : '/success',
+            handler: successHandler
+        });
+
+        mockDestinationServer.route({
             method : 'POST',
+            path   : '/success',
+            handler: successHandler
+        });
+
+        mockDestinationServer.route({
+            method : 'PUT',
+            path   : '/success',
+            handler: successHandler
+        });
+
+        mockDestinationServer.route({
+            method : 'DELETE',
+            path   : '/success',
+            handler: successHandler
+        });
+
+        mockDestinationServer.route({
+            method : 'PATCH',
             path   : '/success',
             handler: successHandler
         });
@@ -111,7 +135,7 @@ describe('proxyMethod', () => {
                 context.server.request.rawRequest = hapiReq.raw.req;
                 context.server.response.rawResponse = hapiReq.raw.res;
 
-                ProxyMethod.bind(context)();
+                return ProxyMethod.bind(context)();
             }
         });
 
@@ -151,7 +175,7 @@ describe('proxyMethod', () => {
                 context.server.request.rawRequest = hapiReq.raw.req;
                 context.server.response.rawResponse = hapiReq.raw.res;
 
-                ProxyMethod.bind(context)();
+                return ProxyMethod.bind(context)();
             }
         });
 
@@ -192,7 +216,7 @@ describe('proxyMethod', () => {
                 context.server.request.rawRequest = hapiReq.raw.req;
                 context.server.response.rawResponse = hapiReq.raw.res;
 
-                ProxyMethod.bind(context)();
+                return ProxyMethod.bind(context)();
             }
         });
 
@@ -209,6 +233,289 @@ describe('proxyMethod', () => {
 
             expect(res.statusCode).to.equal(200);
             expect(payload.content).to.equal('foo');
+            expect(res.headers['toki-test1']).to.equal('foobar');
+            expect(res.headers['toki-test2']).to.equal('knope');
+        });
+    });
+
+    // it.only('should successfully append a path', () => {
+    //
+    //     const context = {
+    //         config: {
+    //             destination: 'http://localhost:5001/?name=bob',
+    //             joinPaths: true
+    //         },
+    //         server: {
+    //             request: {
+    //                 rawRequest: null
+    //             },
+    //             response: {
+    //                 rawResponse: null
+    //             }
+    //         }
+    //     };
+    //
+    //     mockSourceServer.route({
+    //         method: 'GET',
+    //         path: '/test/success',
+    //         handler: (hapiReq, hapiRes) => {
+    //
+    //             context.server.request.rawRequest = hapiReq.raw.req;
+    //             context.server.response.rawResponse = hapiReq.raw.res;
+    //
+    //             return ProxyMethod.bind(context)();
+    //         }
+    //     });
+    //
+    //     return mockSourceServer.inject({
+    //         method: 'GET',
+    //         url: '/test/success',
+    //         headers: {
+    //             'toki-test1': 'foobar',
+    //             'toki-test2': 'knope'
+    //         }
+    //     }).then((res) => {
+    //
+    //         const payload = JSON.parse(res.payload);
+    //
+    //         expect(res.statusCode).to.equal(200);
+    //         expect(payload.content).to.equal('foo');
+    //         expect(payload.query.name).to.equal('bob');
+    //         expect(res.headers['toki-test1']).to.equal('foobar');
+    //         expect(res.headers['toki-test2']).to.equal('knope');
+    //     });
+    // });
+
+    it('should successfully test GET', () => {
+
+        const context = {
+            config: {
+                destination: 'http://localhost:5001/success?name=bob'
+            },
+            server: {
+                request: {
+                    rawRequest: null
+                },
+                response: {
+                    rawResponse: null
+                }
+            }
+        };
+
+        mockSourceServer.route({
+            method: 'GET',
+            path: '/test',
+            handler: (hapiReq, hapiRes) => {
+
+                context.server.request.rawRequest = hapiReq.raw.req;
+                context.server.response.rawResponse = hapiReq.raw.res;
+
+                return ProxyMethod.bind(context)();
+            }
+        });
+
+        return mockSourceServer.inject({
+            method: 'GET',
+            url: '/test',
+            headers: {
+                'toki-test1': 'foobar',
+                'toki-test2': 'knope'
+            }
+        }).then((res) => {
+
+            const payload = JSON.parse(res.payload);
+
+            expect(res.statusCode).to.equal(200);
+            expect(payload.content).to.equal('foo');
+            expect(payload.query.name).to.equal('bob');
+            expect(res.headers['toki-test1']).to.equal('foobar');
+            expect(res.headers['toki-test2']).to.equal('knope');
+        });
+    });
+
+    it('should successfully test POST', () => {
+
+        const context = {
+            config: {
+                destination: 'http://localhost:5001/success?name=bob'
+            },
+            server: {
+                request: {
+                    rawRequest: null
+                },
+                response: {
+                    rawResponse: null
+                }
+            }
+        };
+
+        mockSourceServer.route({
+            method: 'POST',
+            path: '/test',
+            handler: (hapiReq, hapiRes) => {
+
+                context.server.request.rawRequest = hapiReq.raw.req;
+                context.server.response.rawResponse = hapiReq.raw.res;
+
+                return ProxyMethod.bind(context)();
+            }
+        });
+
+        return mockSourceServer.inject({
+            method: 'POST',
+            url: '/test',
+            headers: {
+                'toki-test1': 'foobar',
+                'toki-test2': 'knope'
+            }
+        }).then((res) => {
+
+            const payload = JSON.parse(res.payload);
+
+            expect(res.statusCode).to.equal(200);
+            expect(payload.content).to.equal('foo');
+            expect(payload.query.name).to.equal('bob');
+            expect(res.headers['toki-test1']).to.equal('foobar');
+            expect(res.headers['toki-test2']).to.equal('knope');
+        });
+    });
+
+    it('should successfully test PUT', () => {
+
+        const context = {
+            config: {
+                destination: 'http://localhost:5001/success?name=bob'
+            },
+            server: {
+                request: {
+                    rawRequest: null
+                },
+                response: {
+                    rawResponse: null
+                }
+            }
+        };
+
+        mockSourceServer.route({
+            method: 'PUT',
+            path: '/test',
+            handler: (hapiReq, hapiRes) => {
+
+                context.server.request.rawRequest = hapiReq.raw.req;
+                context.server.response.rawResponse = hapiReq.raw.res;
+
+                return ProxyMethod.bind(context)();
+            }
+        });
+
+        return mockSourceServer.inject({
+            method: 'PUT',
+            url: '/test',
+            headers: {
+                'toki-test1': 'foobar',
+                'toki-test2': 'knope'
+            }
+        }).then((res) => {
+
+            const payload = JSON.parse(res.payload);
+
+            expect(res.statusCode).to.equal(200);
+            expect(payload.content).to.equal('foo');
+            expect(payload.query.name).to.equal('bob');
+            expect(res.headers['toki-test1']).to.equal('foobar');
+            expect(res.headers['toki-test2']).to.equal('knope');
+        });
+    });
+
+    it('should successfully test PATCH', () => {
+
+        const context = {
+            config: {
+                destination: 'http://localhost:5001/success?name=bob'
+            },
+            server: {
+                request: {
+                    rawRequest: null
+                },
+                response: {
+                    rawResponse: null
+                }
+            }
+        };
+
+        mockSourceServer.route({
+            method: 'PATCH',
+            path: '/test',
+            handler: (hapiReq, hapiRes) => {
+
+                context.server.request.rawRequest = hapiReq.raw.req;
+                context.server.response.rawResponse = hapiReq.raw.res;
+
+                return ProxyMethod.bind(context)();
+            }
+        });
+
+        return mockSourceServer.inject({
+            method: 'PATCH',
+            url: '/test',
+            headers: {
+                'toki-test1': 'foobar',
+                'toki-test2': 'knope'
+            }
+        }).then((res) => {
+
+            const payload = JSON.parse(res.payload);
+
+            expect(res.statusCode).to.equal(200);
+            expect(payload.content).to.equal('foo');
+            expect(payload.query.name).to.equal('bob');
+            expect(res.headers['toki-test1']).to.equal('foobar');
+            expect(res.headers['toki-test2']).to.equal('knope');
+        });
+    });
+
+    it('should successfully test DELETE', () => {
+
+        const context = {
+            config: {
+                destination: 'http://localhost:5001/success?name=bob'
+            },
+            server: {
+                request: {
+                    rawRequest: null
+                },
+                response: {
+                    rawResponse: null
+                }
+            }
+        };
+
+        mockSourceServer.route({
+            method: 'DELETE',
+            path: '/test',
+            handler: (hapiReq, hapiRes) => {
+
+                context.server.request.rawRequest = hapiReq.raw.req;
+                context.server.response.rawResponse = hapiReq.raw.res;
+
+                return ProxyMethod.bind(context)();
+            }
+        });
+
+        return mockSourceServer.inject({
+            method: 'DELETE',
+            url: '/test',
+            headers: {
+                'toki-test1': 'foobar',
+                'toki-test2': 'knope'
+            }
+        }).then((res) => {
+
+            const payload = JSON.parse(res.payload);
+
+            expect(res.statusCode).to.equal(200);
+            expect(payload.content).to.equal('foo');
+            expect(payload.query.name).to.equal('bob');
             expect(res.headers['toki-test1']).to.equal('foobar');
             expect(res.headers['toki-test2']).to.equal('knope');
         });
