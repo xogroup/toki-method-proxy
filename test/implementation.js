@@ -17,17 +17,6 @@ const ProxyMethod = require('./../lib/implementation');
 describe('proxyMethod', () => {
 
     lab.before((done) => {
-
-        //Mocked source server
-
-        mockSourceServer = new Hapi.Server({
-            debug: false
-        });
-
-        mockSourceServer.connection({
-            port: 5000
-        });
-
         //Mocked forwarding destination server
 
         mockDestinationServer = new Hapi.Server({
@@ -40,12 +29,16 @@ describe('proxyMethod', () => {
 
         const successHandler = (request, reply) => {
 
-            return reply('foo');
+            return reply({
+                content: 'foo',
+                query: request.query,
+                path: request.path
+            });
         };
 
         const errorHandler = (request, reply) => {
 
-            return reply(new Boom.implementationError());
+            return reply(Boom.implementationError('Awww crap'));
         };
 
         mockDestinationServer.route({
@@ -64,6 +57,15 @@ describe('proxyMethod', () => {
     });
 
     lab.beforeEach( (done) => {
+        //Mocked source server
+
+        mockSourceServer = new Hapi.Server({
+            debug: false
+        });
+
+        mockSourceServer.connection({
+            port: 5000
+        });
 
         mockSourceServer.start(done);
     });
@@ -112,8 +114,125 @@ describe('proxyMethod', () => {
             url: '/test'
         }).then((res) => {
 
+            const payload = JSON.parse(res.payload);
+
             expect(res.statusCode).to.equal(200);
-            expect(res.payload).to.equal('foo');
+            expect(payload.content).to.equal('foo');
+        });
+    });
+
+    it('should successfully pass along query params', () => {
+
+        const context = {
+            config: {
+                destination: 'http://localhost:5001/success?bar=buz'
+            },
+            server: {
+                request: {
+                    rawRequest: null
+                },
+                response: {
+                    rawResponse: null
+                }
+            }
+        };
+
+        mockSourceServer.route({
+            method: 'POST',
+            path: '/test',
+            handler: (hapiReq, hapiRes) => {
+
+                context.server.request.rawRequest = hapiReq.raw.req;
+                context.server.response.rawResponse = hapiReq.raw.res;
+
+                ProxyMethod.bind(context)();
+            }
+        });
+
+        return mockSourceServer.inject({
+            method: 'POST',
+            url: '/test'
+        }).then((res) => {
+
+            const payload = JSON.parse(res.payload);
+
+            expect(res.statusCode).to.equal(200);
+            expect(payload.content).to.equal('foo');
+            expect(payload.query.bar).to.equal('buz');
+        });
+    });
+
+    it('should pass along errors when the remote throws an error', () => {
+
+        const context = {
+            config: {
+                destination: 'http://localhost:5001/error'
+            },
+            server: {
+                request: {
+                    rawRequest: null
+                },
+                response: {
+                    rawResponse: null
+                }
+            }
+        };
+
+        mockSourceServer.route({
+            method: 'POST',
+            path: '/test',
+            handler: (hapiReq, hapiRes) => {
+
+                context.server.request.rawRequest = hapiReq.raw.req;
+                context.server.response.rawResponse = hapiReq.raw.res;
+
+                ProxyMethod.bind(context)();
+            }
+        });
+
+        return mockSourceServer.inject({
+            method: 'POST',
+            url: '/test'
+        }).then((res) => {
+
+            expect(res.statusCode).to.equal(500);
+        });
+    });
+
+    it('should pass along 404 when the remote gives a 404', () => {
+
+        const context = {
+            config: {
+                destination: 'http://localhost:5001/nope'
+            },
+            server: {
+                request: {
+                    rawRequest: null
+                },
+                response: {
+                    rawResponse: null
+                }
+            }
+        };
+
+        mockSourceServer.route({
+            method: 'POST',
+            path: '/test',
+            handler: (hapiReq, hapiRes) => {
+
+                context.server.request.rawRequest = hapiReq.raw.req;
+                context.server.response.rawResponse = hapiReq.raw.res;
+
+                ProxyMethod.bind(context)();
+            }
+        });
+
+        return mockSourceServer.inject({
+            method: 'POST',
+            url: '/test'
+        }).then((res) => {
+
+            expect(res.statusCode).to.equal(404);
         });
     });
 });
