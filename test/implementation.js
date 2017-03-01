@@ -28,12 +28,18 @@ describe('proxyMethod', () => {
         });
 
         const successHandler = (request, reply) => {
-
-            return reply({
+            //send back all the headers we got
+            const res = reply({
                 content: 'foo',
                 query: request.query,
                 path: request.path
             });
+
+            for (const header in request.headers) {
+                if (header.indexOf('toki-') !== -1) {
+                    res.header(header, request.headers[header]);
+                }
+            }
         };
 
         const errorHandler = (request, reply) => {
@@ -159,6 +165,52 @@ describe('proxyMethod', () => {
             expect(res.statusCode).to.equal(200);
             expect(payload.content).to.equal('foo');
             expect(payload.query.bar).to.equal('buz');
+        });
+    });
+
+    it('should successfully pass along headers', () => {
+
+        const context = {
+            config: {
+                destination: 'http://localhost:5001/success'
+            },
+            server: {
+                request: {
+                    rawRequest: null
+                },
+                response: {
+                    rawResponse: null
+                }
+            }
+        };
+
+        mockSourceServer.route({
+            method: 'POST',
+            path: '/test',
+            handler: (hapiReq, hapiRes) => {
+
+                context.server.request.rawRequest = hapiReq.raw.req;
+                context.server.response.rawResponse = hapiReq.raw.res;
+
+                ProxyMethod.bind(context)();
+            }
+        });
+
+        return mockSourceServer.inject({
+            method: 'POST',
+            url: '/test',
+            headers: {
+                'toki-test1': 'foobar',
+                'toki-test2': 'knope'
+            }
+        }).then((res) => {
+
+            const payload = JSON.parse(res.payload);
+
+            expect(res.statusCode).to.equal(200);
+            expect(payload.content).to.equal('foo');
+            expect(res.headers['toki-test1']).to.equal('foobar');
+            expect(res.headers['toki-test2']).to.equal('knope');
         });
     });
 
