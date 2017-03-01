@@ -8,31 +8,23 @@ const it = lab.it;
 
 const Hapi         = require('hapi');
 const Boom         = require('boom');
-const fs           = require('fs');
-const stream       = require('stream');
-const proxyMethod  = require('../');
-// const JwtAuth      = require('xo-jwt-auth');
-// const jwtAuth      = new JwtAuth();
 
-let mockTokiBridge;
+let mockSourceServer;
 let mockDestinationServer;
-let rawMock;
 
-//need to mock out xo-jwt-auth or just check that auth headers get passed?
-
-//How to mock out the rawRequest with the stream.
+const ProxyMethod = require('./../lib/implementation');
 
 describe('proxyMethod', () => {
 
     lab.before((done) => {
 
-        //Mocked Toki Bridge server
+        //Mocked source server
 
-        mockTokiBridge = new Hapi.Server({
+        mockSourceServer = new Hapi.Server({
             debug: false
         });
 
-        mockTokiBridge.connection({
+        mockSourceServer.connection({
             port: 5000
         });
 
@@ -46,67 +38,56 @@ describe('proxyMethod', () => {
             port: 5001
         });
 
+        const successHandler = (request, reply) => {
+
+            return reply('foo');
+        };
+
+        const errorHandler = (request, reply) => {
+
+            return reply(new Boom.implementationError());
+        };
+
         mockDestinationServer.route({
             method : 'POST',
-            path   : '/test',
-            handler: function (request, reply) {
-                // console.log('request: ', request);
-
-                if (request.payload && request.payload.test === 'abc'){
-                    return reply('Success!');
-                }
-                else {
-                    console.log('before boom');
-                    return reply(Boom.notFound('Missing'));
-                }
-            }
+            path   : '/success',
+            handler: successHandler
         });
 
-        mockTokiBridge.start(() => {
-            mockDestinationServer.start(done());
+        mockDestinationServer.route({
+            method : 'POST',
+            path   : '/error',
+            handler: errorHandler
         });
+
+        mockDestinationServer.start(done);
     });
 
-    lab.after((done) => {
-        mockTokiBridge.stop(() => {
-            mockDestinationServer.stop(done());
-        });
+    lab.beforeEach( (done) => {
+
+        mockSourceServer.start(done);
     });
 
-    it('checks to make sure proxyMethod is an object', (done) => {
+    lab.afterEach( (done) => {
 
-        expect(proxyMethod).to.be.a.object();
-        expect(proxyMethod).to.include('proxyRequest');
+        mockSourceServer.stop(done);
+    });
+
+    it('checks to make sure proxyMethod is a function', (done) => {
+
+        expect(ProxyMethod).to.be.a.function();
         done();
     });
 
     it('should successfully proxy a basic POST request', () => {
-        let rawRequest;
-        let rawResponse;
-
-        mockTokiBridge.route({
-            method: 'POST',
-            path: '/test',
-            handler: function (request, reply) {
-
-                rawRequest  = request.raw.req;
-                rawResponse = request.raw.res;
-
-                return reply(true);
-            }
-        });
 
         const context = {
-            action: {
-                method: 'post',
-                destinationUrl: 'localhost:5001'
+            config: {
+                destination: 'http://localhost:5001/success'
             },
             server: {
                 request: {
-                    headers: {},
-                    path: '/test',
-                    rawRequest: null,
-                    method: 'post'
+                    rawRequest: null
                 },
                 response: {
                     rawResponse: null
@@ -114,36 +95,25 @@ describe('proxyMethod', () => {
             }
         };
 
-        return mockTokiBridge.inject({
-            method : 'POST',
-            url    : '/test',
-            payload: {
-                test: 'abc'
+        mockSourceServer.route({
+            method: 'POST',
+            path: '/test',
+            handler: (hapiReq, hapiRes) => {
+
+                context.server.request.rawRequest = hapiReq.raw.req;
+                context.server.response.rawResponse = hapiReq.raw.res;
+
+                ProxyMethod.bind(context)();
             }
-        })
-            .then(() => {
-                context.server.request.rawRequest   = rawRequest;
-                context.server.response.rawResponse = rawResponse;
+        });
 
-                // console.log('rawResponse before: ', context.server.response.rawResponse)
-                context.server.response.rawResponse.on('end', () => {
-                    console.log('ENDED');
-                });
-            })
-            .then(() => {
-                const proxyRequest = proxyMethod.proxyRequest.bind(context);
+        return mockSourceServer.inject({
+            method: 'POST',
+            url: '/test'
+        }).then((res) => {
 
-                return proxyRequest();
-            })
-            .then(() => {
-                // console.log('rawResponse after ', context.server.response.rawResponse);
-
-                expect(context.server.response.rawResponse).to.exist();
-                expect(context.server.response.rawResponse.statusCode).to.equal(200);
-                expect(context.server.response.rawResponse.statusMessage).to.equal('OK');
-            })
-            .catch((err) => {
-                console.log('err: ', err);
-            });
+            expect(res.statusCode).to.equal(200);
+            expect(res.payload).to.equal('foo');
+        });
     });
 });
