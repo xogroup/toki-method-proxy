@@ -10,9 +10,11 @@ Lead Maintainer: [Matt Phillips](https://github.com/mattcphillips)
 <!-- Badges Go Here -->
 
 <!-- Badge from https://badge.fury.io/ -->
+[![npm version](https://badge.fury.io/js/toki-method-proxy.svg)](https://badge.fury.io/js/toki-method-proxy)
 <!-- Build Status from Travis -->
+[![Build Status](https://travis-ci.org/xogroup/toki-method-proxy.svg?branch=master)](https://travis-ci.org/xogroup/toki-method-proxy)
 <!-- Security Scan from Snyk.io -->
-
+[![Known Vulnerabilities](https://snyk.io/test/github/xogroup/toki-method-proxy/badge.svg)](https://snyk.io/test/github/xogroup/toki-method-proxy)
 
 <!-- End Badges -->
 <!-- Quick Example -->
