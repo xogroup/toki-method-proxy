@@ -86,6 +86,11 @@ describe('proxyMethod', () => {
         mockDestinationServer.start(done);
     });
 
+    lab.after( (done) => {
+
+        mockDestinationServer.stop(done);
+    });
+
     lab.beforeEach( (done) => {
         //Mocked source server
 
@@ -238,6 +243,7 @@ describe('proxyMethod', () => {
         });
     });
 
+    // This test covers a currently disabled feature around being able to concatenate paths
     // it.only('should successfully append a path', () => {
     //
     //     const context = {
