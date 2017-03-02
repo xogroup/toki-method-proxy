@@ -69,7 +69,7 @@ describe('performance benchmark', () => {
         mockSourceServer.stop(done);
     });
 
-    it('should successfully proxy a 1000 requests', { timeout: 3000 }, () => {
+    it('should successfully proxy a 1000 requests', { timeout: 6000 }, () => {
 
         const context = {
             config: {
